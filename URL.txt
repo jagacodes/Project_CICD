@@ -1,0 +1,5 @@
+Git Hub URL
+https://github.com/jagacodes/Project_CICD
+
+
+URL of Front End (Public url of S3 bucket)
