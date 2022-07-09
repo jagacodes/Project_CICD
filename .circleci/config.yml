@@ -237,8 +237,8 @@ jobs:
           command: |
             # Your code here
             cat ~/project/.circleci/ansible/inventory.txt
-            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml
-            
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/configure-server.yml \
+            --key-file ~/.ssh/id_rsa_7d27a10f082d138b202853862b1d4bc8
       # Here's where you will add some code to rollback on failure  
       - destroy-environment    
 
@@ -342,7 +342,7 @@ jobs:
           fingerprints: [7d:27:a1:0f:08:2d:13:8b:20:28:53:86:2b:1d:4b:c8]
       # attach workspace
       - attach_workspace:
-          at: .
+          at: ~/
       - run:
           name: Install dependencies
           command: |
@@ -371,8 +371,8 @@ jobs:
           name: Deploy backend
           command: |
             # your code here
-            cat project/.circleci/ansible/inventory.txt
-            ansible-playbook -i project/.circleci/ansible/inventory.txt ./.circleci/ansible/deploy-backend.yml -vvv
+            cat ~/project/.circleci/ansible/inventory.txt
+            ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml -vvv
             #  cat ./.circleci/ansible/inventory.txt
             #  ansible-playbook -i ./.circleci/ansible/inventory.txt ./.circleci/ansible/deploy-backend.yml -vvv
       # Here's where you will add some code to rollback on failure
