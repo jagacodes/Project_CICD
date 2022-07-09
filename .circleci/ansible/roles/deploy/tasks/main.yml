@@ -1,43 +1,28 @@
 ---
 
-- name: 'update and upgrade packages.'
-  become: yes
-  apt:
-    upgrade: yes
-    update_cache: yes
-    
+- name: "copy backend folder"
+  become: true
+  copy:
+    src: /root/project/backend.tar
+    dest: /home/ubuntu/
 
-- name: remove expired dependencies
-  become: yes
-  apt:
-    autoremove: yes
-
-
-- name: install dependencies
-  become: yes
-  apt:
-    name: ['nodejs', 'npm']
-    state: latest
-    update_cache: yes
-
-
-- name: install pm2
-  become: yes
-  npm:
-    name: pm2
-    global: yes
-    state: latest
-    production: yes
-
-    
-- name: extract artifact
-  become: yes
-  unarchive:
-    src: files/artifact.tar.gz
-    dest: .
-
-- name: start app
-  become: yes
+- name: "un tar"
+  become: true
   shell: |
-    pm2 stop all
-    pm2 start npm -- start
+    tar -xvf backend.tar
+- name: "install node dependencies"
+  become: true
+  shell: |
+    cd backend/
+    npm i
+- name: "build"
+  become: true
+  shell: |
+    cd backend/
+    npm run build
+    
+- name: "start"
+  become: true
+  shell: |
+    cd backend/
+    pm2 start npm --name backend -- start
