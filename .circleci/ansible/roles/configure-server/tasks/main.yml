@@ -1,24 +1,33 @@
 ---
 
-- name: "Update/upgrade packages."
+- name: 'update and upgrade packages.'
   become: true
   apt:
     upgrade: "yes"
+    update_cache: yes 
 
-- name: "Install nodejs and npm"
+
+- name: remove obsolete dependencies
   become: true
   apt:
-    name: ["nodejs", "npm"]
+    autoremove: yes
+
+
+- name: install dependencies
+  become: true
+  apt:
+    name: ['nodejs', 'npm']
     state: latest
     update_cache: yes
 
-- name: "Install pm2."
+    
+- name: install pm2
   become: true
   npm:
     name: pm2
     global: yes
+    state: latest
     production: yes
-    state: present
 
 - name: "Install rsync."
   become: true
