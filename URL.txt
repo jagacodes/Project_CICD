@@ -3,3 +3,6 @@ https://github.com/jagacodes/Project_CICD
 
 
 URL of Front End (Public url of S3 bucket)
+http://udapeople-232bed8.s3-website-us-east-1.amazonaws.com
+
+
