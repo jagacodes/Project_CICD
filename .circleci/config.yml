@@ -1,5 +1,10 @@
 version: 2.1
 
+parameters:
+  workflow_id:
+    type: string
+    default: '${CIRCLE_WORKFLOW_ID}'
+
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -26,7 +31,7 @@ commands:
           when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-            SUCCESS=$(curl --insecure https://kvdb.io/K1PfVrsQYT2jJeohcY6Brf/migration_${CIRCLE_WORKFLOW_ID:0:7})
+            SUCCESS=$(curl --insecure https://kvdb.io/THhJR6187AUXkZqje3mh8T/migration_${CIRCLE_WORKFLOW_ID:0:7})
             if(( $SUCCESS==1 )); 
             then
              cd backend/
@@ -52,10 +57,10 @@ jobs:
             npm run build
       - save_cache:
           paths: [frontend/node_modules]
-          key: frontend-build-1
+          key: frontend-build
       - save_cache:
           paths: [frontend/dist]
-          key: frontend-dist-1
+          key: frontend-dist
 
   build-backend:
     docker:
@@ -73,11 +78,11 @@ jobs:
              npm run build
       - save_cache:
           paths: [backend/node_modules]
-          key: backend-build-1
+          key: backend-build
 
       - save_cache:
           paths: [backend/dist]
-          key: backend-dist-1
+          key: backend-dist
 
   test-frontend:
     docker:
@@ -89,7 +94,7 @@ jobs:
       # Restore from cache
       - restore_cache:
           keys: 
-            - frontend-build-1
+            - frontend-build
       # Your job code here
       - run:
           name: Run frontend test
@@ -109,7 +114,7 @@ jobs:
       # Restore from cache
       - restore_cache:
           keys: 
-            - backend-build-1
+            - backend-build
       # Your job code here
       - run:
           name: Run backend test
@@ -129,7 +134,7 @@ jobs:
       # Restore from cache
       - restore_cache:
           keys: 
-            - frontend-build-1
+            - frontend-build
       # Your job code here
       - run:
           name: Scan frontend dependencies
@@ -149,7 +154,7 @@ jobs:
       # Restore from cache
       - restore_cache:
           keys: 
-            - backend-build-1
+            - backend-build
       # Your job code here
       - run:
           name: Scan backend dependencies
@@ -175,7 +180,7 @@ jobs:
               --tags project=udapeople \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
-              # exit 1
+              
       - run:
           name: Ensure front-end infrastructure exist
           command: |
@@ -184,9 +189,9 @@ jobs:
               --tags project=udapeople \
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  
-              # exit 1
+              
       - run:
-          name: Add back-end ip to ansible inventory
+          name: Add back-end ip to inventory
           command: |
             # Your code here
             aws ec2 describe-instances \
@@ -194,7 +199,7 @@ jobs:
               --output text >> .circleci/ansible/inventory.txt
             cat .circleci/ansible/inventory.txt
             yum -y install tar gzip jq npm
-            # exit 1
+            
       - persist_to_workspace:
           root: ~/
           paths:
@@ -279,12 +284,11 @@ jobs:
           name: Send migration results to kvdb.io
           command: |
             # Your code here
-            curl --insecure https://kvdb.io/THhJR6187AUXkZqje3mh8T/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
-            # if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
-            # then
-            #     If you are using kvdb.io, generate the bucket ID "9GE4jRtKznmVKRfvdBABBe" in your local terminal first
-            #     curl --insecure https://kvdb.io/K1PfVrsQYT2jJeohcY6Brf/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
-            # fi
+            #curl --insecure https://kvdb.io/THhJR6187AUXkZqje3mh8T/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
+            then
+                curl --insecure https://kvdb.io/THhJR6187AUXkZqje3mh8T/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+            fi
           
      # Here's where you will add some code to rollback on failure
       - destroy-environment      
@@ -313,16 +317,16 @@ jobs:
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
             cat frontend/.env
             cd frontend
-            npm i
+            npm install
             npm run build
             npm audit fix --audit-level=critical --force
       - run:
-          name: Deploy frontend objects
+          name: Deploy frontend 
           command: |
             # your code here
             aws s3 sync ./frontend/dist s3://"udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --debug
             # cd frontend
-            # npm i
+            # npm install
             # npm run build
             # tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             # aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
@@ -330,6 +334,7 @@ jobs:
       # Here's where you will add some code to rollback on failure      
       - destroy-environment
       - revert-migrations        
+
   deploy-backend:
     docker:
       # Docker image here that supports Ansibl
@@ -373,8 +378,6 @@ jobs:
             # your code here
             cat ~/project/.circleci/ansible/inventory.txt
             ansible-playbook -i ~/project/.circleci/ansible/inventory.txt ~/project/.circleci/ansible/deploy-backend.yml -vvv
-            #  cat ./.circleci/ansible/inventory.txt
-            #  ansible-playbook -i ./.circleci/ansible/inventory.txt ./.circleci/ansible/deploy-backend.yml -vvv
       # Here's where you will add some code to rollback on failure
       - destroy-environment
 
@@ -386,7 +389,7 @@ jobs:
       # Checkout code from gi
       - checkout
       - attach_workspace:
-          at: .
+          at: ~/
       - run:
           name: Install dependencies
           command: |
@@ -417,7 +420,7 @@ jobs:
             if curl -s ${URL} | grep "Welcome"
             then
                 # Change this to 0 after the job fails
-              return 0
+              return 1
             else
               return 1
             fi
@@ -514,8 +517,8 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations]
-      #- smoke-test:
-      #    requires: [deploy-backend, deploy-frontend]
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
       #- cloudfront-update:
       #    requires: [smoke-test]
       #- cleanup:
