@@ -375,7 +375,7 @@ jobs:
 
   smoke-test:
     docker:
-      # Lightweight Docker image
+      # Lightweight Docker image.
       - image: python:3.10-alpine3.16
     steps:
       # Checkout code from git
