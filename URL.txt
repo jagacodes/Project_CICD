@@ -3,12 +3,12 @@ https://github.com/jagacodes/Project_CICD
 
 
 URL02 of Front End (Public url of S3 bucket)
-http://udapeople-41f60dd.s3-website-us-east-1.amazonaws.com
+http://udapeople-5f47957.s3-website-us-east-1.amazonaws.com/#/employees
 
 
 URL03 of CloudFront
-http://d1owgpyu65ae4b.cloudfront.net
+http://d2qgqsmdfxetu5.cloudfront.net/#/employees
 
 
 URL04 of Backend
-http://34.229.203.54:3030/api/status
+http://35.171.9.53:3030/api/status
