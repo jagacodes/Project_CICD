@@ -507,7 +507,7 @@ jobs:
             cat inventory.txt
             ansible-playbook -i inventory.txt node-exporter.yml \
             --key-file ~/.ssh/id_rsa_7d27a10f082d138b202853862b1d4bc8
-      # Here's where you will add some code to rollback on failure
+      # Here's where you will add some code to rollback on failure.
       - destroy-environment
       - revert-migrations
             
